@@ -1,1 +1,678 @@
+<!-- кто полез в код тот должен Вове шаурму -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тренажёр дат по истории</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script src="https://unpkg.com/lucide@latest"></script>
 
+  <style>
+    :root {
+      --bg-main: #F4ECE1;
+      --card-bg: #FCF9F5;
+      --card-border: #E2D7C7;
+      --text-main: #2A2421;
+      --text-muted: #736760;
+      
+      --accent-burgundy: #800020;
+      --accent-burgundy-hover: #630018;
+      
+      --success-bg: #E8F5E9;
+      --success-border: #A5D6A7;
+      --success-text: #1B5E20;
+
+      --error-bg: #FDF2F2;
+      --error-border: #F5C6CB;
+      --error-text: #842029;
+
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px;
+      line-height: 1.5;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 760px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .dates-list-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(42, 36, 33, 0.03);
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent-burgundy);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--card-border);
+    }
+
+    .dates-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px 24px;
+    }
+
+    .date-item {
+      display: flex;
+      gap: 10px;
+      font-size: 0.88rem;
+      border-bottom: 1px dashed var(--card-border);
+      padding-bottom: 6px;
+      align-items: baseline;
+    }
+
+    .date-year {
+      font-weight: 700;
+      color: var(--accent-burgundy);
+      min-width: 90px;
+      flex-shrink: 0;
+    }
+
+    .date-event {
+      color: var(--text-main);
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background-color: #E2D7C7;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background-color: var(--accent-burgundy);
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .stat-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 2px 6px rgba(42, 36, 33, 0.03);
+    }
+
+    .stat-icon {
+      color: var(--accent-burgundy);
+      display: flex;
+      align-items: center;
+    }
+
+    .stat-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.2;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .main-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 10px 30px rgba(42, 36, 33, 0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .select-wrapper {
+      position: relative;
+    }
+
+    select {
+      width: 100%;
+      appearance: none;
+      -webkit-appearance: none;
+      background-color: var(--bg-main);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      padding-right: 40px;
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: var(--accent-burgundy);
+      box-shadow: 0 0 0 3px rgba(128, 0, 32, 0.12);
+    }
+
+    .select-icon {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--text-muted);
+    }
+
+    .question-box {
+      background-color: #FAF6F0;
+      border: 1px dashed var(--card-border);
+      border-radius: 12px;
+      padding: 28px 20px;
+      text-align: center;
+      min-height: 110px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .question-text {
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.35;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      background-color: var(--bg-main);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-family: var(--font-sans);
+      font-size: 1rem;
+      color: var(--text-main);
+      transition: all 0.2s ease;
+    }
+
+    input[type="text"]::placeholder {
+      color: #A0938A;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--accent-burgundy);
+      background-color: #FFF;
+      box-shadow: 0 0 0 3px rgba(128, 0, 32, 0.12);
+    }
+
+    button.btn-submit {
+      background-color: var(--accent-burgundy);
+      color: #FFF;
+      border: none;
+      border-radius: 10px;
+      padding: 0 24px;
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 12px rgba(128, 0, 32, 0.18);
+    }
+
+    button.btn-submit:hover {
+      background-color: var(--accent-burgundy-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(128, 0, 32, 0.25);
+    }
+
+    button.btn-submit:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 6px rgba(128, 0, 32, 0.15);
+    }
+
+    .alert {
+      display: none;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      animation: fadeIn 0.25s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .alert.success {
+      display: flex;
+      background-color: var(--success-bg);
+      border: 1px solid var(--success-border);
+      color: var(--success-text);
+    }
+
+    .alert.error {
+      display: flex;
+      background-color: var(--error-bg);
+      border: 1px solid var(--error-border);
+      color: var(--error-text);
+    }
+
+    .alert-icon {
+      display: flex;
+      align-items: center;
+      margin-top: 1px;
+    }
+
+    @media (max-width: 580px) {
+      .dates-grid {
+        grid-template-columns: 1fr;
+      }
+      .date-item {
+        font-size: 0.85rem;
+      }
+      .dashboard-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .stat-card.accuracy-card {
+        grid-column: span 2;
+      }
+      .input-group {
+        flex-direction: column;
+      }
+      button.btn-submit {
+        padding: 14px;
+        justify-content: center;
+      }
+      .question-text {
+        font-size: 1.3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <section class="dates-list-card">
+      <h2 class="section-title">Исторические даты</h2>
+      <div class="dates-grid" id="dates-grid"></div>
+    </section>
+
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="stat-card">
+        <div class="stat-icon"><i data-lucide="check-circle-2"></i></div>
+        <div class="stat-info">
+          <span class="stat-value" id="score-correct">0</span>
+          <span class="stat-label">Угадано</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon"><i data-lucide="target"></i></div>
+        <div class="stat-info">
+          <span class="stat-value" id="score-total">0</span>
+          <span class="stat-label">Всего попыток</span>
+        </div>
+      </div>
+
+      <div class="stat-card accuracy-card">
+        <div class="stat-icon"><i data-lucide="award"></i></div>
+        <div class="stat-info">
+          <span class="stat-value" id="score-accuracy">0%</span>
+          <span class="stat-label">Точность</span>
+        </div>
+      </div>
+    </div>
+
+    <main class="main-card">
+      
+      <div class="select-wrapper">
+        <select id="era-select">
+          <option value="all">Все исторические эпохи</option>
+          <option value="ancient">До XVI века (Навигатор ФИПИ)</option>
+          <option value="modern">XVII–XVIII века</option>
+          <option value="contemporary">XXI век (Культура и наука)</option>
+        </select>
+        <i data-lucide="chevron-down" class="select-icon"></i>
+      </div>
+
+      <div class="question-box">
+        <div class="question-text" id="event-display">Загрузка...</div>
+      </div>
+
+      <div class="input-group">
+        <input type="text" id="year-input" placeholder="Введите год..." autocomplete="off">
+        <button class="btn-submit" id="check-btn">
+          Ответить
+          <i data-lucide="arrow-right" size="18"></i>
+        </button>
+      </div>
+
+      <div id="feedback-alert" class="alert">
+        <div class="alert-icon" id="alert-icon"></div>
+        <div class="alert-message" id="alert-message"></div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    const historyData = [
+      { year: "862", event: "«Призвание» Рюрика", era: "ancient" },
+      { year: "882", event: "Захват Олегом Вещим Киева", era: "ancient" },
+      { year: "907", event: "Поход Олега Вещего на Константинополь", era: "ancient" },
+      { year: "911", event: "Договор Руси с Византией", era: "ancient" },
+      { year: "941, 944", event: "Походы Игоря Старого на Константинополь", era: "ancient" },
+      { year: "964-972", event: "Походы Святослава Игоревича", era: "ancient" },
+      { year: "978-1015", event: "Княжение Владимира Святославича в Киеве", era: "ancient" },
+      { year: "988", event: "Крещение Руси", era: "ancient" },
+      { year: "1016-1018", event: "Первый период княжения Ярослава Мудрого", era: "ancient" },
+      { year: "1019-1054", event: "Княжение Ярослава Мудрого в Киеве", era: "ancient" },
+      { year: "1097", event: "Любечский съезд князей", era: "ancient" },
+      { year: "1113-1125", event: "Княжение в Киеве Владимира Мономаха", era: "ancient" },
+      { year: "1147", event: "Первое упоминание Москвы в летописях", era: "ancient" },
+      { year: "1185", event: "Поход Игоря Святославича на половцев", era: "ancient" },
+      { year: "1223", event: "Битва на реке Калке", era: "ancient" },
+      { year: "1237-1241", event: "Завоевание Руси ханом Батыем", era: "ancient" },
+      { year: "1240", event: "Невская битва", era: "ancient" },
+      { year: "1242", event: "Ледовое побоище", era: "ancient" },
+      { year: "1242-1243", event: "Образование Золотой Орды", era: "ancient" },
+      { year: "1325-1340", event: "Княжение Ивана Калиты", era: "ancient" },
+      { year: "1359-1389", event: "Княжение Дмитрия Донского", era: "ancient" },
+      { year: "1378", event: "Битва на реке Воже", era: "ancient" },
+      { year: "1380", event: "Куликовская битва", era: "ancient" },
+      { year: "1382", event: "Разорение Москвы ханом Тохтамышем", era: "ancient" },
+      { year: "1389-1425", event: "Княжение Василия I", era: "ancient" },
+      { year: "1395", event: "Разгром Золотой Орды Тимуром", era: "ancient" },
+      { year: "1410", event: "Грюнвальдская битва", era: "ancient" },
+      { year: "1425-1453", event: "Междоусобная война в Московском княжестве", era: "ancient" },
+      { year: "1425-1462", event: "Княжение Василия II Тёмного", era: "ancient" },
+      { year: "1448", event: "Автокефалия Русской Православной Церкви", era: "ancient" },
+      { year: "1462-1505", event: "Княжение Ивана III", era: "ancient" },
+      { year: "1478", event: "Присоединение Новгородской земли к Москве", era: "ancient" },
+      { year: "1480", event: "«Стояние» на р. Угре. Падение Ордынского ига", era: "ancient" },
+      { year: "1485", event: "Присоединение Твери к Москве", era: "ancient" },
+      { year: "1497", event: "Принятие Судебника Ивана III", era: "ancient" },
+      { year: "1598-1605", event: "Царствование Бориса Годунова", era: "modern" },
+      { year: "1601-1603", event: "Неурожай и голод в России", era: "modern" },
+      { year: "1603", event: "Восстание Хлопка Косолапа", era: "modern" },
+      { year: "1604", event: "Вторжение Лжедмитрия I в Северские земли", era: "modern" },
+      { year: "1605", event: "Воцарение Лжедмитрия I в Москве", era: "modern" },
+      { year: "1606-1610", event: "Царствование Василия Шуйского", era: "modern" },
+      { year: "1606-1607", event: "Восстание Ивана Болотникова", era: "modern" },
+      { year: "1608-1610", event: "Военные действия Лжедмитрия II в Тушине", era: "modern" },
+      { year: "1609", event: "Выборгский договор Василия Шуйского со Швецией", era: "modern" },
+      { year: "1609-1611", event: "Осада Смоленска поляками", era: "modern" },
+      { year: "1610-1613", event: "Семибоярщина", era: "modern" },
+      { year: "1611", event: "Создание первого ополчения в Рязани", era: "modern" },
+      { year: "1611", event: "Захват Новгорода шведами, Смоленска – поляками", era: "modern" },
+      { year: "1611", event: "Создание второго ополчения (Минин и Пожарский)", era: "modern" },
+      { year: "1612", event: "Изгнание поляков из Москвы вторым ополчением", era: "modern" },
+      { year: "1613", event: "Избрание Михаила Романова на царство", era: "modern" },
+      { year: "1613-1645", event: "Царствование Михаила Фёдоровича Романова", era: "modern" },
+      { year: "1617", event: "Столбовский мир со Швецией", era: "modern" },
+      { year: "1618", event: "Деулинское перемирие с Польшей", era: "modern" },
+      { year: "1632-1634", event: "Смоленская война", era: "modern" },
+      { year: "1634", event: "Поляновский мир с Польшей", era: "modern" },
+      { year: "1637-1642", event: "Азовское сидение казаков", era: "modern" },
+      { year: "1645-1676", event: "Царствование Алексея Михайловича", era: "modern" },
+      { year: "1648", event: "Соляной бунт в Москве", era: "modern" },
+      { year: "1648", event: "Поход С. Дежнёва", era: "modern" },
+      { year: "1649", event: "Принятие Соборного уложения", era: "modern" },
+      { year: "1653-1656", event: "Церковная реформа патриарха Никона", era: "modern" },
+      { year: "1654", event: "Переяславская рада", era: "modern" },
+      { year: "1654-1667", event: "Русско-польская война", era: "modern" },
+      { year: "1656-1658", event: "Русско-шведская война", era: "modern" },
+      { year: "1662", event: "Медный бунт в Москве", era: "modern" },
+      { year: "1667", event: "Принятие Новоторгового устава", era: "modern" },
+      { year: "1668-1676", event: "Соловецкое восстание", era: "modern" },
+      { year: "1670-1671", event: "Восстание Степана Разина", era: "modern" },
+      { year: "1676-1682", event: "Царствование Фёдора Алексеевича", era: "modern" },
+      { year: "1676-1681", event: "Русско-турецкая война (Чигиринские походы)", era: "modern" },
+      { year: "1682", event: "Отмена местничества", era: "modern" },
+      { year: "1682", event: "Стрелецкий бунт в Москве (Хованщина)", era: "modern" },
+      { year: "1682-1725", event: "Царствование Петра I", era: "modern" },
+      { year: "1686", event: "«Вечный мир» с Польшей", era: "modern" },
+      { year: "1687", event: "Открытие Славяно-греко-латинской академии", era: "modern" },
+      { year: "1689", event: "Нерчинский договор с Китаем", era: "modern" },
+      { year: "1695, 1696", event: "Азовские походы Петра I", era: "modern" },
+      { year: "1696", event: "Создание военно-морского флота", era: "modern" },
+      { year: "1697-1698", event: "Великое посольство Петра I в Европу", era: "modern" },
+      { year: "1700-1721", event: "Северная война со Швецией", era: "modern" },
+      { year: "1700", event: "Введение юлианского летоисчисления", era: "modern" },
+      { year: "1700", event: "Битва при Нарве", era: "modern" },
+      { year: "1703", event: "Основание Санкт-Петербурга", era: "modern" },
+      { year: "1705", event: "Введение рекрутской повинности", era: "modern" },
+      { year: "1707-1708", event: "Восстание К. Булавина", era: "modern" },
+      { year: "1708", event: "Битва у деревни Лесная", era: "modern" },
+      { year: "1709", event: "Полтавская битва", era: "modern" },
+      { year: "1711", event: "Прутский поход", era: "modern" },
+      { year: "1711", event: "Учреждение Правительствующего Сената", era: "modern" },
+      { year: "1714", event: "Указ о единонаследии", era: "modern" },
+      { year: "1714", event: "Гангутское сражение", era: "modern" },
+      { year: "1718", event: "Учреждение первых коллегий", era: "modern" },
+      { year: "1720", event: "Сражение при Гренгаме", era: "modern" },
+      { year: "1721", event: "Учреждение Священного Синода", era: "modern" },
+      { year: "1721", event: "Ништадтский мир. Провозглашение империи", era: "modern" },
+      { year: "1722", event: "Издание Табели о рангах", era: "modern" },
+      { year: "1722", event: "Устав о наследовании престола", era: "modern" },
+      { year: "1725-1727", event: "Царствование Екатерины I", era: "modern" },
+      { year: "1726", event: "Учреждение Верховного тайного совета", era: "modern" },
+      { year: "1727-1730", event: "Царствование Петра II", era: "modern" },
+      { year: "1730-1740", event: "Царствование Анны Иоанновны", era: "modern" },
+      { year: "1736-1739", event: "Война с Турцией (Белградский мир)", era: "modern" },
+      { year: "1741-1761", event: "Царствование Елизаветы Петровны", era: "modern" },
+      { year: "1755", event: "Основание Московского университета", era: "modern" },
+      { year: "1757-1762", event: "Участие России в Семилетней войне", era: "modern" },
+      { year: "1762", event: "Манифест о вольности дворянства", era: "modern" },
+      { year: "1762-1796", event: "Царствование Екатерины II", era: "modern" },
+      { year: "1764", event: "Секуляризация церковных земель", era: "modern" },
+      { year: "1767-1768", event: "Деятельность Уложенной комиссии", era: "modern" },
+      { year: "1768-1774", event: "Русско-турецкая война (Кючук-Кайнарджийский мир)", era: "modern" },
+      { year: "1770", event: "Чесменское сражение", era: "modern" },
+      { year: "1773-1775", event: "Восстание Емельяна Пугачёва", era: "modern" },
+      { year: "1775", event: "Губернская реформа Екатерины II", era: "modern" },
+      { year: "1783", event: "Присоединение Крыма к России", era: "modern" },
+      { year: "1785", event: "Жалованные грамоты дворянству и городам", era: "modern" },
+      { year: "1787-1791", event: "Русско-турецкая война (Ясский мир)", era: "modern" },
+      { year: "1790", event: "Взятие А. В. Суворовым Измаила", era: "modern" },
+      { year: "1796-1801", event: "Царствование Павла I", era: "modern" },
+      { year: "1797", event: "Указ о трехдневной барщине", era: "modern" },
+      { year: "1799", event: "Итальянский и Швейцарский походы Суворова", era: "modern" },
+      { year: "2000", event: "Присуждение Ж. И. Алфёрову Нобелевской премии по физике", era: "contemporary" },
+      { year: "2002", event: "Памятник Александру Невскому в СПб (ск. В. Казенюк)", era: "contemporary" },
+      { year: "2003", event: "Памятник Александру Невскому в Волгограде (ск. И. Черноглазов)", era: "contemporary" },
+      { year: "2003", event: "Памятник княгине Ольге в Пскове (ск. З. Церетели)", era: "contemporary" },
+      { year: "2003", event: "Нобелевская премия В. Гинзбургу и А. Абрикосову", era: "contemporary" },
+      { year: "2003", event: "Памятник Ольге и Владимиру в Пскове (ск. В. Клыков)", era: "contemporary" },
+      { year: "2004", event: "Памятник княгине Ольге во Владимире (ск. И. Илюшин)", era: "contemporary" },
+      { year: "2007", event: "Памятник Евпатию Коловрату в Рязани (ск. О. Седов)", era: "contemporary" },
+      { year: "2008", event: "Памятник Екатерине II в Севастополе (ск. С. Чиж)", era: "contemporary" },
+      { year: "2008", event: "Памятник С. Королёву на Аллее космонавтов", era: "contemporary" },
+      { year: "2009", event: "Памятник Иосифу Волоцкому (ск. С. Исаков)", era: "contemporary" },
+      { year: "2010", event: "Премия Г. Я. Перельману за доказательство гипотезы Пуанкаре", era: "contemporary" },
+      { year: "2011", event: "Памятник Ивану Ползунову в Великом Новгороде (ск. Р. Акчурин)", era: "contemporary" },
+      { year: "2012", event: "Памятник Святителю Иову в Старице (ск. Ю. Хмелевский)", era: "contemporary" }
+    ];
+
+    let filteredData = [];
+    let currentItem = null;
+    let correctCount = 0;
+    let totalCount = 0;
+    let isAnswered = false;
+
+    const eventDisplay = document.getElementById('event-display');
+    const yearInput = document.getElementById('year-input');
+    const checkBtn = document.getElementById('check-btn');
+    const eraSelect = document.getElementById('era-select');
+    const datesGrid = document.getElementById('dates-grid');
+    
+    const scoreCorrect = document.getElementById('score-correct');
+    const scoreTotal = document.getElementById('score-total');
+    const scoreAccuracy = document.getElementById('score-accuracy');
+    const progressFill = document.getElementById('progress-fill');
+    
+    const alertBox = document.getElementById('feedback-alert');
+    const alertIcon = document.getElementById('alert-icon');
+    const alertMessage = document.getElementById('alert-message');
+
+    function renderDatesList() {
+      datesGrid.innerHTML = filteredData.map(item => `
+        <div class="date-item">
+          <span class="date-year">${item.year}</span>
+          <span class="date-event">${item.event}</span>
+        </div>
+      `).join('');
+    }
+
+    function filterData() {
+      const selectedEra = eraSelect.value;
+      if (selectedEra === 'all') {
+        filteredData = [...historyData];
+      } else {
+        filteredData = historyData.filter(item => item.era === selectedEra);
+      }
+      renderDatesList();
+      nextQuestion();
+    }
+
+    function nextQuestion() {
+      if (filteredData.length === 0) return;
+      const randomIndex = Math.floor(Math.random() * filteredData.length);
+      currentItem = filteredData[randomIndex];
+      
+      eventDisplay.textContent = currentItem.event;
+      yearInput.value = '';
+      yearInput.focus();
+      hideAlert();
+      isAnswered = false;
+    }
+
+    function cleanText(str) {
+      return str.toString().toLowerCase().replace(/[\s\.\-\–\—\,]/g, '');
+    }
+
+    function checkAnswer() {
+      if (!currentItem || isAnswered) return;
+      
+      const userVal = cleanText(yearInput.value);
+      if (!userVal) return;
+
+      const correctVal = cleanText(currentItem.year);
+      totalCount++;
+
+      if (userVal === correctVal) {
+        correctCount++;
+        showAlert('success', 'Отлично! Ответ абсолютно верный.');
+        isAnswered = true;
+        setTimeout(nextQuestion, 1200);
+      } else {
+        showAlert('error', `Неверно. Правильный ответ: <strong>${currentItem.year}</strong>`);
+      }
+
+      updateDashboard();
+    }
+
+    function updateDashboard() {
+      scoreCorrect.textContent = correctCount;
+      scoreTotal.textContent = totalCount;
+      
+      const accuracy = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
+      scoreAccuracy.textContent = `${accuracy}%`;
+
+      const progress = Math.min(Math.round((totalCount / filteredData.length) * 100), 100);
+      progressFill.style.width = `${progress}%`;
+    }
+
+    function showAlert(type, message) {
+      alertBox.className = `alert ${type}`;
+      alertMessage.innerHTML = message;
+
+      if (type === 'success') {
+        alertIcon.innerHTML = '<i data-lucide="check-circle" size="20"></i>';
+      } else {
+        alertIcon.innerHTML = '<i data-lucide="x-circle" size="20"></i>';
+      }
+      
+      lucide.createIcons();
+    }
+
+    function hideAlert() {
+      alertBox.className = 'alert';
+      alertBox.style.display = 'none';
+    }
+
+    checkBtn.addEventListener('click', checkAnswer);
+    yearInput.addEventListener('keypress', (e) => { 
+      if (e.key === 'Enter') checkAnswer(); 
+    });
+    eraSelect.addEventListener('change', filterData);
+
+    lucide.createIcons();
+    filterData();
+  </script>
+</body>
+</html>
